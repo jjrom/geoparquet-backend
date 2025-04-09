@@ -1,0 +1,23 @@
+volumes:
+  database_data:
+    driver: local
+  static_content:
+    driver: local
+networks:
+  default:
+    driver: bridge
+services:
+  geoparquet-backend:
+    image: jjrom/geoparquet-backend:latest
+    restart: always
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    environment:
+      - GEOPARQUET_FILE=/data/march_2022_pred.parquet
+    ports:
+      - 3001:3001
+    volumes:
+      - ./server.js:/usr/src/app/server.js
+      - ./data:/data
+      - ./cache:/cache
