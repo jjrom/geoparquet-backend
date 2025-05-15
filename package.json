@@ -1,7 +1,7 @@
 {
-    "name": "sargassum-backend",
+    "name": "geoparquet-backend",
     "version": "1.0.0",
-    "description": "API to monitor sargassum trajectories in the Ocean",
+    "description": "Geoparquet server",
     "main": "server.js",
     "scripts": {
       "start": "node server.js"

@@ -14,7 +14,7 @@ const timeSuffix = 'T00:00:00';
 console.log('Using GEOPARQUET_FILE : ' + GEOPARQUET_FILE)
 
 // Caching mechanism
-const useCache = true;
+const useCache = false;
 const CACHE_DIR = '/cache';
 if (!fs.existsSync(CACHE_DIR)) {
     fs.mkdirSync(CACHE_DIR);
@@ -51,9 +51,10 @@ app.get("/geojson/:timestamp", async (req, res) => {
     const limit = req.query.limit || null;
     const value = req.query.value || null;
     const timestamp = req.params.timestamp;
+    const geoparquetFile = req.query.parquet ||GEOPARQUET_FILE;
 
     var query = `
-        SELECT time, ST_AsGeoJSON(geometry) as geometry, value FROM '${GEOPARQUET_FILE}'
+        SELECT time, ST_AsGeoJSON(geometry) as geometry, value FROM '${geoparquetFile}'
         WHERE time = '${timestamp}${timeSuffix}'
     `;
 
@@ -78,7 +79,7 @@ app.get("/geojson/:timestamp", async (req, res) => {
                 type: 'FeatureCollection',
                 links: [
                     {
-                        href: GEOPARQUET_FILE,
+                        href: geoparquetFile,
                         rel: 'data',
                         title: 'GeoParquet file',
                         type: 'application/vnd.apache.parquet'
@@ -111,9 +112,10 @@ app.get("/geoarrow/:timestamp", async (req, res, next) => {
     const limit = req.query.limit || null;
     const value = req.query.value || null;
     const timestamp = req.params.timestamp;
+    const geoparquetFile = req.query.parquet ||GEOPARQUET_FILE;
 
     var query = `
-        SELECT time, array_value(ST_X(ST_Centroid(geometry)), ST_Y(ST_centroid(geometry))) AS geometry, value FROM '${GEOPARQUET_FILE}'
+        SELECT time, array_value(ST_X(ST_Centroid(geometry)), ST_Y(ST_centroid(geometry))) AS geometry, value FROM '${geoparquetFile}'
         WHERE time = '${timestamp}${timeSuffix}'
     `;
 
