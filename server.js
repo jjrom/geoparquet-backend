@@ -51,7 +51,11 @@ app.get("/geojson/:timestamp", async (req, res) => {
     const limit = req.query.limit || null;
     const value = req.query.value || null;
     const timestamp = req.params.timestamp;
-    const geoparquetFile = req.query.parquet ||GEOPARQUET_FILE;
+    const geoparquetFile = req.query.parquet || GEOPARQUET_FILE;
+
+    if ( ! await urlExist(url) ) {
+        res.status(400).json({ error: "Parquet file is not available " + geoparquetFile });
+    }
 
     var query = `
         SELECT time, ST_AsGeoJSON(geometry) as geometry, value FROM '${geoparquetFile}'
@@ -114,6 +118,10 @@ app.get("/geoarrow/:timestamp", async (req, res, next) => {
     const timestamp = req.params.timestamp;
     const geoparquetFile = req.query.parquet ||GEOPARQUET_FILE;
 
+    if ( ! await urlExist(url) ) {
+        res.status(400).json({ error: "Parquet file is not available " + geoparquetFile });
+    }
+    
     var query = `
         SELECT time, array_value(ST_X(ST_Centroid(geometry)), ST_Y(ST_centroid(geometry))) AS geometry, value FROM '${geoparquetFile}'
         WHERE time = '${timestamp}${timeSuffix}'
@@ -198,3 +206,13 @@ function saveToCache(hash, data) {
     const cacheFile = path.join(CACHE_DIR, `${hash}.json`);
     fs.writeFileSync(cacheFile, JSON.stringify(data), 'utf8');
 };
+
+async function urlExist(url) {
+    try {
+        const response = await fetch(url, { method: 'HEAD' });
+        return response.status === 200 ? true : false;
+    }
+    catch (error) {
+        return false;
+    }
+}
