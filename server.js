@@ -53,8 +53,12 @@ app.get("/geojson/:timestamp", async (req, res) => {
     const timestamp = req.params.timestamp;
     const geoparquetFile = req.query.parquet || GEOPARQUET_FILE;
 
-
-    if ( geoparquetFile.startsWith('http') && ! await urlExist(geoparquetFile) ) {
+    if ( geoparquetFile.startsWith('http') ) {
+        if (! await urlExist(geoparquetFile) ) {
+            res.status(400).json({ error: "Parquet file is not available " + geoparquetFile });
+        }
+    }
+    else if ( !checkFileExistsSync(geoparquetFile) ) {
         res.status(400).json({ error: "Parquet file is not available " + geoparquetFile });
     }
 
@@ -119,7 +123,12 @@ app.get("/geoarrow/:timestamp", async (req, res, next) => {
     const timestamp = req.params.timestamp;
     const geoparquetFile = req.query.parquet ||GEOPARQUET_FILE;
 
-    if ( geoparquetFile.startsWith('http') && ! await urlExist(geoparquetFile) ) {
+    if ( geoparquetFile.startsWith('http') ) {
+        if (! await urlExist(geoparquetFile) ) {
+            res.status(400).json({ error: "Parquet file is not available " + geoparquetFile });
+        }
+    }
+    else if ( !checkFileExistsSync(geoparquetFile) ) {
         res.status(400).json({ error: "Parquet file is not available " + geoparquetFile });
     }
 
@@ -217,3 +226,14 @@ async function urlExist(url) {
         return false;
     }
 }
+
+function checkFileExistsSync(filepath){
+  let flag = true;
+  try{
+    fs.accessSync(filepath, fs.constants.F_OK);
+  }catch(e){
+    flag = false;
+  }
+  return flag;
+}
+
