@@ -53,7 +53,8 @@ app.get("/geojson/:timestamp", async (req, res) => {
     const timestamp = req.params.timestamp;
     const geoparquetFile = req.query.parquet || GEOPARQUET_FILE;
 
-    if ( ! await urlExist(url) ) {
+
+    if ( geoparquetFile.startsWith('http') && ! await urlExist(geoparquetFile) ) {
         res.status(400).json({ error: "Parquet file is not available " + geoparquetFile });
     }
 
@@ -118,10 +119,10 @@ app.get("/geoarrow/:timestamp", async (req, res, next) => {
     const timestamp = req.params.timestamp;
     const geoparquetFile = req.query.parquet ||GEOPARQUET_FILE;
 
-    if ( ! await urlExist(url) ) {
+    if ( geoparquetFile.startsWith('http') && ! await urlExist(geoparquetFile) ) {
         res.status(400).json({ error: "Parquet file is not available " + geoparquetFile });
     }
-    
+
     var query = `
         SELECT time, array_value(ST_X(ST_Centroid(geometry)), ST_Y(ST_centroid(geometry))) AS geometry, value FROM '${geoparquetFile}'
         WHERE time = '${timestamp}${timeSuffix}'
